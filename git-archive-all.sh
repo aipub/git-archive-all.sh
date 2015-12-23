@@ -241,7 +241,11 @@ fi
 while read path; do
     TREEISH=$(git submodule | grep "^ .*${path%/} " | cut -d ' ' -f 2) # git submodule does not list trailing slashes in $path
     cd "$path"
-    git archive --format=$FORMAT --prefix="${PREFIX}$path" ${TREEISH:-HEAD} > "$TMPDIR"/"$(echo "$path" | sed -e 's/\//./g')"$FORMAT
+    XTMPFILE="$TMPDIR"/"$(echo "$path" | sed -e 's/\//./g')"$FORMAT
+    echo  "Archiving $XTMPFILE"
+    # remove file if it already exists
+    rm -f $XTMPFILE
+    git archive --format=$FORMAT --prefix="${PREFIX}$path" ${TREEISH:-HEAD} > $XTMPFILE
     if [ $FORMAT == 'zip' ]; then
         # delete the empty directory entry; zipped submodules won't unzip if we don't do this
         zip -d "$(tail -n 1 $TMPFILE)" "${PREFIX}${path%/}" >/dev/null # remove trailing '/'
